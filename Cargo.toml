@@ -1,0 +1,19 @@
+[package]
+name = "rdtsc-tuning"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[profile.release]
+opt-level = 3
+lto = true
+panic = 'abort'
+debug = false
+debug-assertions = false
+codegen-units = 1
+overflow-checks = false
+incremental = false
+
+[dependencies]
+tick_counter = "0.4.5"
