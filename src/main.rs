@@ -7,6 +7,18 @@ use tick_counter::aarch64_tick_counter;
 use tick_counter::x86_64_tick_counter;
 
 fn main() {
+    let core_ids = core_affinity::get_core_ids().unwrap();
+
+    // for each core ids
+    for core_id in core_ids {
+        core_affinity::set_for_current(core_id);
+        println!("Core {:?} is running", core_id);
+        run();
+    }
+}
+
+#[inline]
+fn run() {
     const SAMPLES_COUNT: usize = 1024; // Set the desired number of samples
 
     let mut samples: Vec<u64> = vec![0; SAMPLES_COUNT];
