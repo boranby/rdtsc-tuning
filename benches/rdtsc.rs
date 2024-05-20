@@ -14,10 +14,12 @@ pub fn rdtsc() -> u64 {
 }
 
 fn bench_rdtsc(c: &mut Criterion) {
+    core_affinity::set_for_current(core_affinity::CoreId { id: 2 });
     c.bench_function("rdtsc", |b| b.iter(|| rdtsc()));
 }
 
 fn bench_instant_now(c: &mut Criterion) {
+    core_affinity::set_for_current(core_affinity::CoreId { id: 2 });
     c.bench_function("instant_now", |b| b.iter(|| std::time::Instant::now()));
 }
 
