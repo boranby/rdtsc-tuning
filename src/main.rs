@@ -1,6 +1,7 @@
-use std::ops::AddAssign;
 
+use std::ops::AddAssign;
 use tick_counter::aarch64_tick_counter;
+
 
 fn main() {
     const SAMPLES_COUNT: usize = 1024; // Set the desired number of samples
