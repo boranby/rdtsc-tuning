@@ -1,17 +1,15 @@
-
 use std::ops::AddAssign;
 
+use core_affinity::CoreId;
 #[cfg(target_arch = "aarch64")]
 use tick_counter::aarch64_tick_counter;
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 use tick_counter::x86_64_tick_counter;
 
 fn main() {
-    let core_ids = core_affinity::get_core_ids().unwrap();
-
     // for each core ids
-    for core_id in core_ids {
-        core_affinity::set_for_current(core_id);
+    for core_id in 0..8 {
+        core_affinity::set_for_current(CoreId { id: core_id });
         println!("Core {:?} is running", core_id);
         run();
         println!();
