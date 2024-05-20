@@ -1,6 +1,9 @@
 use criterion::{Criterion, criterion_group, criterion_main};
 
+#[cfg(target_arch = "aarch64")]
 use tick_counter::aarch64_tick_counter;
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+use tick_counter::x86_64_tick_counter;
 
 #[inline]
 pub fn rdtsc() -> u64 {

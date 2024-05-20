@@ -1,7 +1,10 @@
 
 use std::ops::AddAssign;
-use tick_counter::aarch64_tick_counter;
 
+#[cfg(target_arch = "aarch64")]
+use tick_counter::aarch64_tick_counter;
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+use tick_counter::x86_64_tick_counter;
 
 fn main() {
     const SAMPLES_COUNT: usize = 1024; // Set the desired number of samples
@@ -71,7 +74,6 @@ mod accumulator {
     }
 }
 
-// Dummy rdtsc function for demonstration purposes
 #[inline]
 fn rdtsc() -> u64 {
     #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
