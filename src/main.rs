@@ -14,6 +14,7 @@ fn main() {
         core_affinity::set_for_current(core_id);
         println!("Core {:?} is running", core_id);
         run();
+        println!();
     }
 }
 
