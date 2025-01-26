@@ -1,5 +1,4 @@
-use criterion::{Criterion, criterion_group, criterion_main};
-
+use criterion::{criterion_group, criterion_main, Criterion};
 #[cfg(target_arch = "aarch64")]
 use tick_counter::aarch64_tick_counter;
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
