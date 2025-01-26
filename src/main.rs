@@ -11,8 +11,6 @@ use crate::rdtsc::rdtsc;
 /// Set the desired number of samples
 const SAMPLES_COUNT: usize = 8192;
 
-/// The main function sets the current thread to run on each core and executes
-/// the `run` function.
 fn main() {
     let core_ids = core_affinity::get_core_ids().expect(
         "Cannot retrieve information on all the cores on which the current thread is allowed to \
@@ -29,8 +27,6 @@ fn main() {
     table.printstd();
 }
 
-/// Runs the benchmarking process by collecting samples and calculating
-/// statistics.
 #[inline]
 fn run(core_id: &CoreId, table: &mut Table) {
     let mut samples: Vec<u64> = vec![0; SAMPLES_COUNT];
