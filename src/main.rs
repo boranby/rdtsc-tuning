@@ -23,6 +23,7 @@ fn main() {
         run(&core_id, &mut table);
     }
 
+    println!("Samples count: {}", SAMPLES_COUNT);
     table.printstd();
 }
 
