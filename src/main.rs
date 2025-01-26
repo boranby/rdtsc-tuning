@@ -11,16 +11,15 @@ use crate::rdtsc::rdtsc;
 /// Set the desired number of samples
 const SAMPLES_COUNT: usize = 8192;
 
-fn main() {
-    let core_ids = core_affinity::get_core_ids().expect(
-        "Cannot retrieve information on all the cores on which the current thread is allowed to \
-         run.",
-    );
+/// We need to have this number for the isolated cores
+/// core_affinity::get_core_ids() cannot get the isolated cores
+const NUMBER_OF_CORES: usize = 16;
 
+fn main() {
     let mut table = Table::new();
     table.add_row(row!["Core", "Mean", "Standard Deviation"]);
-    for core_id in core_ids {
-        core_affinity::set_for_current(CoreId { id: core_id.id });
+    for core_id in 0..NUMBER_OF_CORES {
+        core_affinity::set_for_current(CoreId { id: core_id });
         run(&core_id, &mut table);
     }
 
@@ -28,7 +27,7 @@ fn main() {
 }
 
 #[inline]
-fn run(core_id: &CoreId, table: &mut Table) {
+fn run(core_id: &usize, table: &mut Table) {
     let mut samples: Vec<u64> = vec![0; SAMPLES_COUNT];
     for s in &mut samples {
         *s = rdtsc();
@@ -43,5 +42,5 @@ fn run(core_id: &CoreId, table: &mut Table) {
     let std_dev =
         (accumulator.variance() * samples.len() as f64 / (samples.len() - 1) as f64).sqrt();
 
-    table.add_row(row![core_id.id, mean, std_dev]);
+    table.add_row(row![core_id, mean, std_dev]);
 }
