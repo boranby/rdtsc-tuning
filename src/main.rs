@@ -1,94 +1,51 @@
+mod accumulator;
+mod rdtsc;
+
 use std::ops::AddAssign;
 
 use core_affinity::CoreId;
-#[cfg(target_arch = "aarch64")]
-use tick_counter::aarch64_tick_counter;
-#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-use tick_counter::x86_64_tick_counter;
+use prettytable::{row, Table};
 
+use crate::rdtsc::rdtsc;
+
+/// Set the desired number of samples
+const SAMPLES_COUNT: usize = 8192;
+
+/// The main function sets the current thread to run on each core and executes
+/// the `run` function.
 fn main() {
-    // for each core ids
-    for core_id in 0..8 {
-        core_affinity::set_for_current(CoreId { id: core_id });
-        println!("Core {:?} is running", core_id);
-        run();
-        println!();
+    let core_ids = core_affinity::get_core_ids().expect(
+        "Cannot retrieve information on all the cores on which the current thread is allowed to \
+         run.",
+    );
+
+    let mut table = Table::new();
+    table.add_row(row!["Core", "Mean", "Standard Deviation"]);
+    for core_id in core_ids {
+        core_affinity::set_for_current(CoreId { id: core_id.id });
+        run(&core_id, &mut table);
     }
+
+    table.printstd();
 }
 
+/// Runs the benchmarking process by collecting samples and calculating
+/// statistics.
 #[inline]
-fn run() {
-    const SAMPLES_COUNT: usize = 1024; // Set the desired number of samples
-
+fn run(core_id: &CoreId, table: &mut Table) {
     let mut samples: Vec<u64> = vec![0; SAMPLES_COUNT];
     for s in &mut samples {
         *s = rdtsc();
     }
 
-    let mut c = accumulator::Accumulator::<f64>::new();
+    let mut accumulator = accumulator::Accumulator::<f64>::new();
     for i in 1..samples.len() {
-        c.add_assign(samples[i] as f64 - samples[i - 1] as f64);
+        accumulator.add_assign(samples[i] as f64 - samples[i - 1] as f64);
     }
 
-    let mean = c.mean();
-    let std_dev = (c.variance() * samples.len() as f64 / (samples.len() - 1) as f64).sqrt();
+    let mean = accumulator.mean();
+    let std_dev =
+        (accumulator.variance() * samples.len() as f64 / (samples.len() - 1) as f64).sqrt();
 
-    println!("Mean: {}", mean);
-    println!("Standard Deviation: {}", std_dev);
-}
-
-mod accumulator {
-    use std::ops::AddAssign;
-
-    pub struct Accumulator<T> {
-        sum: T,
-        sum_of_squares: T,
-        count: usize,
-    }
-
-    impl<T> Accumulator<T>
-        where
-            T: Default + Copy + AddAssign<T> + std::ops::Div<f64, Output=f64> + std::ops::Mul<f64, Output=T>
-    {
-        pub fn new() -> Self {
-            Accumulator {
-                sum: Default::default(),
-                sum_of_squares: Default::default(),
-                count: 0,
-            }
-        }
-
-        pub fn mean(&self) -> f64 {
-            if self.count == 0 {
-                0.0
-            } else {
-                self.sum / self.count as f64
-            }
-        }
-
-        pub fn variance(&self) -> f64 {
-            if self.count <= 1 {
-                0.0
-            } else {
-                let mean = self.sum / self.count as f64;
-                (self.sum_of_squares / self.count as f64) - mean * mean
-            }
-        }
-    }
-
-    impl AddAssign<f64> for Accumulator<f64> {
-        fn add_assign(&mut self, rhs: f64) {
-            self.sum += rhs;
-            self.sum_of_squares += rhs * rhs;
-            self.count += 1;
-        }
-    }
-}
-
-#[inline]
-fn rdtsc() -> u64 {
-    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-    return x86_64_tick_counter();
-    #[cfg(target_arch = "aarch64")]
-    return aarch64_tick_counter();
+    table.add_row(row![core_id.id, mean, std_dev]);
 }

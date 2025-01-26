@@ -19,6 +19,7 @@ incremental = false
 tick_counter = "0.4.5"
 criterion = "0.5.1"
 core_affinity = "0.8.1"
+prettytable-rs = "0.10.0"
 
 [[bench]]
 name = "rdtsc"
