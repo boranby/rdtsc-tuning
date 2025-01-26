@@ -9,7 +9,7 @@ use prettytable::{row, Table};
 use crate::rdtsc::rdtsc;
 
 /// Set the desired number of samples
-const SAMPLES_COUNT: usize = 8192;
+const SAMPLES_COUNT: usize = 65_536;
 
 /// We need to have this number for the isolated cores
 /// core_affinity::get_core_ids() cannot get the isolated cores
